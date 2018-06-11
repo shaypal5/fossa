@@ -2,7 +2,7 @@ fossa |fossa_icon|
 ##################
 |PyPI-Status| |PyPI-Versions| |Build-Status| |Codecov| |LICENCE|
 
-.. |fossa_icon| image:: https://github.com/shaypal5/fossa/blob/794957a013e84e2bf2a05541ea040c8600d3247b/fossa_small.png 
+.. |fossa_icon| image:: https://github.com/shaypal5/fossa/blob/1b65be5ed3020cb3e0c554d55c22341b3aa7ca07/fossa_small.png
 
 Distribution-based anomaly detection for time series.
 
