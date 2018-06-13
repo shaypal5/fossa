@@ -1,9 +1,15 @@
 """scikit-learn classifier wrapper for fasttext."""
 
-import numpy as np
+from scipy.stats import chisquare
+import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
+
+from .utils import (
+    pad_windows,
+    one_vs_all_dists,
+)
 
 
 class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
@@ -11,8 +17,16 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
+    p_threshold : float
+        A threshold for p values under which difference in an observed
+        distribution is determined to be a significant anomaly. Has to be a
+        value between 0 and 1 (inclusive).
     """
-    def __init__(self):
+
+    def __init__(self, p_threshold):
+        if p_threshold < 0 or p_threshold > 1:
+            raise ValueError("p_threshold must be in [0,1].")
+        self.p_threshold = p_threshold
         self.last_window = None
 
     @staticmethod
@@ -85,21 +99,69 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
         """
         return self.fit(self, X=X, y=None)
 
-    def predict(self, X):
-        """Predict labels.
+    def _detect_trend(self, obs, exp):
+        direction = 1
+        if obs[0] < exp[0]:
+            direction = -1
+        res = chisquare(obs, exp)
+        if res[1] < self.p_threshold:
+            return res[1], direction
+        return res[1], 0
+
+    def _predict_helper(self, new_windows, last_window):
+        padded = pad_windows(last_window, *new_windows)
+        padded_last = padded.pop(0)
+        last_1vall = one_vs_all_dists(padded_last)
+        res = []
+        for new_win in padded:
+            new_1vall = one_vs_all_dists(new_win)
+            pred = {
+                cat: self._detect_trend(new_1vall[cat], last_1vall[cat])
+                for cat in new_1vall
+            }
+            res.append(pd.DataFrame(pred, index=['p', 'direction']).T)
+        return res
+
+    def detect_trends(self, df):
+        """Detect trends in input data.
+
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
-            The input samples.
+        X : pandas.DataFrame
+            A pandas DataFrame with a two-leveled multi-index, the first
+            indexing time and the second indexing class/topic frequency
+            per-window, and a single column of a numeric dtype, giving said
+            frequency.
+
         Returns
         -------
-        y : array of int of shape = [n_samples]
-            Predicted labels for the given inpurt samples.
+        y : array of pandas.DataFrame objects
+            Predicted labels f
         """
         if self.last_window is None:
             raise NotFittedError("This {} instance is not fitted yet.".format(
                 self.__class__.__name__))
-        return np.array([
-            self._clean_label(res[0][0])
-            for res in self._predict(X)
-        ], dtype=np.float_)
+        windows_to_predict = [df.loc[ix] for ix in df.index.levels[0]]
+        padded_windows = pad_windows(self.last_window, *windows_to_predict)
+        padded_last_win = padded_windows.pop(0)
+        return self._predict_helper(
+            new_windows=padded_windows, last_window=padded_last_win)
+
+    def predict(self, X):
+        """Detect trends in input data.
+
+        Parameters
+        ----------
+        X : pandas.DataFrame
+            A pandas DataFrame with a two-leveled multi-index, the first
+            indexing time and the second indexing class/topic frequency
+            per-window, and a single column of a numeric dtype, giving said
+            frequency.
+
+        Returns
+        -------
+        y : array of pandas.DataFrame objects
+            Predicted labels f
+        """
+        res = self.detect_trends(df=X)
+        return [df.iloc[:, 1] for df in res]

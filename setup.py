@@ -18,6 +18,7 @@ INSTALL_REQUIRES = [
     'numpy',
     'scipy',
     'scikit-learn',
+    'pandas'
 ]
 # FT_REQUIRES = INSTALL_REQUIRES + [
 #     'fasttext==0.1.0+git.3b5fd29',
@@ -25,8 +26,6 @@ INSTALL_REQUIRES = [
 TEST_REQUIRES = [
     # testing and coverage
     'pytest', 'coverage', 'pytest-cov',
-    # unmandatory dependencies of the package itself
-    'pandas',
     # to be able to run `python setup.py checkdocs`
     'collective.checkdocs', 'pygments',
 ]
