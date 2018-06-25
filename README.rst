@@ -12,12 +12,12 @@ Distribution-based anomaly detection for time series.
   >>> clf = LastWindowAnomalyDetector(p_threshold=0.005, normalize=True)
   >>> clf.fit(historic_data_df)
   >>> clf.predict(new_data)
-                      direction
+                       direction
   date       category
-  2018-06-01 hockey         1.0
-             footbal        0.0
-             soccer        -1.0
-             tennis         0.0
+  2018-06-01 hockey          1.0
+             footbal         0.0
+             soccer         -1.0
+             tennis          0.0
 
 
 .. contents::
