@@ -1,5 +1,7 @@
+"""Tests for the LatestWindowAnomalyDetector."""
+
 import pytest
-import pandas as pd
+from sklearn.exceptions import NotFittedError
 
 from fossa import LatestWindowAnomalyDetector
 from fossa.utils import dummy_data
@@ -16,6 +18,15 @@ def test_base():
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
     for x in prediction.values:
+        assert x in [-1, 0, 1]
+
+    num_new_days = 30
+    many_days = dummy_data(
+        num_days=num_new_days, num_categories=num_categ, min_val=100,
+        max_val=1000)
+    predictions = clf.predict(many_days)
+    assert len(predictions) == num_categ * num_new_days
+    for x in predictions.values:
         assert x in [-1, 0, 1]
 
 
@@ -41,6 +52,11 @@ def test_errors():
     # bad p thresholds
     with pytest.raises(ValueError):
         LatestWindowAnomalyDetector(p_threshold=-1)
+    clf = LatestWindowAnomalyDetector(p_threshold=0.00001)
+    new_day = dummy_data(
+        num_days=1, num_categories=8, min_val=100, max_val=1000)
+    with pytest.raises(NotFittedError):
+        clf.predict(new_day)
 
 
 def test_partial_fit():
