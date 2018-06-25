@@ -20,12 +20,15 @@ class LatestWindowAnomalyDetector(FossaPredictorABC):
         A threshold for p values under which difference in an observed
         distribution is determined to be a significant anomaly. Has to be a
         value between 0 and 1 (inclusive).
+    normalize : bool, default False
+        If True, distributions are normalized before being compared.
     """
 
-    def __init__(self, p_threshold):
+    def __init__(self, p_threshold, normalize=False):
         if p_threshold < 0 or p_threshold > 1:
             raise ValueError("p_threshold must be in [0,1].")
         self.p_threshold = p_threshold
+        self.normalize = normalize
         self.last_window = None
 
     def fit(self, X, y=None):
@@ -55,7 +58,7 @@ class LatestWindowAnomalyDetector(FossaPredictorABC):
         return self
 
     def partial_fit(self, X, y=None):
-        """Fits the classifier.
+        """Incrementaly fits the classifier to the given data.
 
         Parameters
         ----------
@@ -86,10 +89,10 @@ class LatestWindowAnomalyDetector(FossaPredictorABC):
     def _predict_helper(self, new_windows, last_window):
         padded = pad_windows(last_window, *new_windows)
         padded_last = padded.pop(0)
-        last_1vall = one_vs_all_dists(padded_last)
+        last_1vall = one_vs_all_dists(padded_last, normalize=self.normalize)
         res = []
         for new_win in padded:
-            new_1vall = one_vs_all_dists(new_win)
+            new_1vall = one_vs_all_dists(new_win, normalize=self.normalize)
             pred = {
                 cat: self._detect_trend(new_1vall[cat], last_1vall[cat])
                 for cat in new_1vall
