@@ -2,17 +2,16 @@
 
 from scipy.stats import chisquare
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
-from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
 
+from .core import FossaPredictorABC
 from .utils import (
     pad_windows,
     one_vs_all_dists,
 )
 
 
-class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
+class LatestWindowAnomalyDetector(FossaPredictorABC):
     """Detects distribution anomalies by comparing to the latest window.
 
     Parameters
@@ -28,30 +27,6 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
             raise ValueError("p_threshold must be in [0,1].")
         self.p_threshold = p_threshold
         self.last_window = None
-
-    @staticmethod
-    def _validate_x(X):
-        try:
-            if len(X.index.levels) != 2:
-                raise ValueError(
-                    "PreviousWindowAnomalyPredictor requires a DataFrame "
-                    "with a two-leveled multi-index, where the first indexes "
-                    "time windows and the second level indexes class/topic "
-                    "frequency per-window."
-                )
-            if len(X.columns) != 1:
-                raise ValueError(
-                    "PreviousWindowAnomalyPredictor requires a DataFrame with "
-                    "a single column.")
-            col_lbl = X.columns[0]
-            if not is_numeric_dtype(X[col_lbl]):
-                raise ValueError(
-                    "PreviousWindowAnomalyPredictor requires a DataFrame with "
-                    "a single column of a numeric dtype.")
-            return X
-        except AttributeError:
-            raise ValueError("PreviousWindowAnomalyPredictor requires "
-                             "pandas.DataFrame objects as input.")
 
     def fit(self, X, y=None):
         """Fits the classifier.
@@ -97,7 +72,7 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
         self : object
             Returns self.
         """
-        return self.fit(self, X=X, y=None)
+        return self.fit(X=X, y=None)
 
     def _detect_trend(self, obs, exp):
         direction = 1
@@ -135,8 +110,16 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        y : array of pandas.DataFrame objects
-            Predicted labels f
+        y : pandas.DataFrame
+            A pandas DataFrame with a two-leveled multi-index, the first
+            indexing time and the second indexing class/topic frequency
+            per-window, and two columns giving trend predictions: the first
+            column gives the p value for the predicted trend, while the second
+            column gives the direction of the predict trend: -1 for a downward
+            trend, 0 for no trend and 1 for an upward trend. The first index
+            level is identical to the input dataframe, while the second level
+            contains all the categories in the union of the last time window
+            and the given time windows.
         """
         if self.last_window is None:
             raise NotFittedError("This {} instance is not fitted yet.".format(
@@ -144,8 +127,12 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
         windows_to_predict = [df.loc[ix] for ix in df.index.levels[0]]
         padded_windows = pad_windows(self.last_window, *windows_to_predict)
         padded_last_win = padded_windows.pop(0)
-        return self._predict_helper(
+        pred_windows = self._predict_helper(
             new_windows=padded_windows, last_window=padded_last_win)
+        res_df = pd.concat(pred_windows, keys=df.index.levels[0],
+                           names=df.index.names)
+        res_df.columns = ['p', 'direction']
+        return res_df
 
     def predict(self, X):
         """Detect trends in input data.
@@ -160,8 +147,14 @@ class LatestWindowAnomalyDetector(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        y : array of pandas.DataFrame objects
-            Predicted labels f
+        y : pandas.DataFrame
+            A pandas DataFrame with a two-leveled multi-index, the first
+            indexing time and the second indexing class/topic frequency
+            per-window, and a single column giving trend predictions: -1 for
+            a downward trend, 0 for no trend and 1 for an upward trend. The
+            first index level is identical to the input dataframe, while the
+            second level contains all the categories in the union of the last
+            time window and the given time windows.
         """
-        res = self.detect_trends(df=X)
-        return [df.iloc[:, 1] for df in res]
+        res_df = self.detect_trends(df=X)
+        return res_df[['direction']]

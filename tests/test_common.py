@@ -1,20 +1,32 @@
 """Test common fossa functionalities."""
 
-# import pytest
+import pytest
+import pandas as pd
 
 from fossa import LatestWindowAnomalyDetector
-from fossa.utils import dummy_data
 
 
-def test_base():
-    num_categ = 8
+def test_bad_data():
     clf = LatestWindowAnomalyDetector(p_threshold=0.00001)
-    history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=100, max_val=1000)
-    new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=100, max_val=1000)
-    clf.fit(history)
-    prediction = clf.predict(new_day)[0]
-    assert len(prediction) == num_categ
-    for x in prediction:
-        assert x in [-1, 0, 1]
+    # bad df: one-level index
+    with pytest.raises(ValueError):
+        df = pd.DataFrame([[1], [4]], columns=['value'])
+        clf.fit(df)
+    # bad df: three-level index (too deep)
+    with pytest.raises(ValueError):
+        df = pd.DataFrame(
+            [[1], [4]], columns=['value'],
+            index=pd.MultiIndex.from_tuples([[1, 2, 3], [1, 2, 4]]))
+        clf.fit(df)
+    # bad df: two-level index (good) by more than one column
+    with pytest.raises(ValueError):
+        df = pd.DataFrame(
+            [[1, 6], [4, 5]], columns=['value', 'foo'],
+            index=pd.MultiIndex.from_tuples([[1, 2], [1, 3]]))
+        clf.fit(df)
+    # bad df: two-level index (good) w/ one column (good) but non-numeric
+    with pytest.raises(ValueError):
+        df = pd.DataFrame(
+            [['foo'], ['bar']], columns=['value'],
+            index=pd.MultiIndex.from_tuples([[1, 2], [1, 3]]))
+        clf.fit(df)
