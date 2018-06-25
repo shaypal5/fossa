@@ -8,8 +8,17 @@ Distribution-based anomaly detection for time series.
 
 .. code-block:: python
 
-  >>> from fossa import LastStepPredictor
-  ...
+  >>> from fossa import LastWindowAnomalyDetector
+  >>> clf = LastWindowAnomalyDetector(p_threshold=0.005, normalize=True)
+  >>> clf.fit(historic_data_df)
+  >>> clf.predict(new_data)
+                      direction
+  date       category
+  2018-06-01 hockey         1.0
+             footbal        0.0
+             soccer        -1.0
+             tennis         0.0
+
 
 .. contents::
 
@@ -28,7 +37,7 @@ Installation
 Features
 ========
 
-* Adheres to the ``scikit-learn`` classifier API.
+* ``scikit-learn``-like classifier API.
 * Pickle-able classifier objects.
 * Pure python.
 * Supports Python 3.5+.
