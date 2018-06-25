@@ -7,22 +7,12 @@ import setuptools
 import versioneer
 
 
-# DEPENDENCY_LINKS = [
-#     (
-#         'git+https://github.com/facebookresearch/fastText.git'
-#         '@3b5fd293597de550a131d81436b9755902f39bb2'
-#         '#egg=fasttext-0.1.0+git.3b5fd29'
-#     ),
-# ]
 INSTALL_REQUIRES = [
     'numpy',
     'scipy',
     'scikit-learn',
     'pandas'
 ]
-# FT_REQUIRES = INSTALL_REQUIRES + [
-#     'fasttext==0.1.0+git.3b5fd29',
-# ]
 TEST_REQUIRES = [
     # testing and coverage
     'pytest', 'coverage', 'pytest-cov',
@@ -38,7 +28,7 @@ setuptools.setup(
     author_email="shay.palachy@gmail.com",
     name='fossa',
     license="MIT",
-    description='scikit-learn wrappers for Python fastText',
+    description='Distribution-based anomaly detection for time series.',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     long_description=README,

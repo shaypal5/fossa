@@ -8,7 +8,6 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.exceptions import NotFittedError
 
-
 class FossaPredictorABC(BaseEstimator, ClassifierMixin, metaclass=abc.ABCMeta):
     """An abstact base class for sklearn-compliant time-series predictors.
 
