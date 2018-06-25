@@ -11,7 +11,7 @@ from .utils import (
 )
 
 
-class LatestWindowAnomalyDetector(FossaPredictorABC):
+class LatestWindowX2AnomalyDetector(FossaPredictorABC):
     """Detects distribution anomalies by comparing to the latest window.
 
     Parameters
