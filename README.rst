@@ -94,18 +94,16 @@ Created by Shay Palachy (shay.palachy@gmail.com) and Omri Mendels.
 
 
 .. |PyPI-Status| image:: https://img.shields.io/pypi/v/fossa.svg
-  :target: https://pypi.python.org/pypi/fossa
+  :target: https://pypi.org/project/fossa
 
 .. |PyPI-Versions| image:: https://img.shields.io/pypi/pyversions/fossa.svg
-   :target: https://pypi.python.org/pypi/fossa
+   :target: https://pypi.org/project/fossa
 
 .. |Build-Status| image:: https://travis-ci.org/shaypal5/fossa.svg?branch=master
   :target: https://travis-ci.org/shaypal5/fossa
 
-.. |LICENCE| image:: https://github.com/shaypal5/fossa/blob/master/mit_license_badge.svg
-  :target: https://github.com/shaypal5/fossa/blob/master/LICENSE
-  
-.. https://img.shields.io/github/license/shaypal5/fossa.svg
+.. |LICENCE| image:: https://img.shields.io/badge/License-MIT-yellow.svg
+  :target: https://pypi.python.org/pypi/pdpipe
 
 .. |Codecov| image:: https://codecov.io/github/shaypal5/fossa/coverage.svg?branch=master
    :target: https://codecov.io/github/shaypal5/fossa?branch=master
