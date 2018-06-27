@@ -11,7 +11,8 @@ INSTALL_REQUIRES = [
     'numpy',
     'scipy',
     'scikit-learn',
-    'pandas'
+    'pandas',
+    'strct>=0.0.27',
 ]
 TEST_REQUIRES = [
     # testing and coverage
