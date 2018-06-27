@@ -14,16 +14,12 @@ def pad_windows(*windows):
     return results
 
 
-def one_vs_all_dists(df, normalize=False):
+def one_vs_all_dists(df):
     res = {}
     for cat in df.index:
         val = float(df.loc[cat][0])
         others = float(df[df.index != cat].sum())
-        arr = [val, others]
-        if normalize:
-            sum_arr = sum(arr)
-            arr = [v/sum_arr for v in arr]
-        res[cat] = arr
+        res[cat] = [val, others]
     return res
 
 

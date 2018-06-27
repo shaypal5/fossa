@@ -1,17 +1,16 @@
 """scikit-learn classifier wrapper for fasttext."""
 
-from scipy.stats import chisquare
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
-from .core import FossaPredictorABC
+from .base import PowerDivergenceAnomalyDetectorABC
 from .utils import (
     pad_windows,
     one_vs_all_dists,
 )
 
 
-class LatestWindowX2AnomalyDetector(FossaPredictorABC):
+class LatestWindowAnomalyDetector(PowerDivergenceAnomalyDetectorABC):
     """Detects distribution anomalies by comparing to the latest window.
 
     Parameters
@@ -20,15 +19,18 @@ class LatestWindowX2AnomalyDetector(FossaPredictorABC):
         A threshold for p values under which difference in an observed
         distribution is determined to be a significant anomaly. Has to be a
         value between 0 and 1 (inclusive).
-    normalize : bool, default False
-        If True, distributions are normalized before being compared.
     """
 
-    def __init__(self, p_threshold, normalize=False):
+    __doc__ += PowerDivergenceAnomalyDetectorABC._param_subdoc
+
+    def __init__(self, p_threshold, power=None, ddof=None):
+        super().__init__(
+            power=power,
+            ddof=ddof,
+        )
         if p_threshold < 0 or p_threshold > 1:
             raise ValueError("p_threshold must be in [0,1].")
         self.p_threshold = p_threshold
-        self.normalize = normalize
         self.last_window = None
 
     def fit(self, X, y=None):
@@ -78,10 +80,28 @@ class LatestWindowX2AnomalyDetector(FossaPredictorABC):
         return self.fit(X=X, y=None)
 
     def _detect_trend(self, obs, exp):
+        """Detects trends in the given distribution, using a power divergence
+        test.
+
+        Parameters
+        ----------
+        obs : array-like
+            The observed distribution.
+        exp : array-like
+            The expected distribution.
+
+        Returns
+        -------
+        p_value : float
+            The p-value of the performed test.
+        direction : int
+            The direction of the trend; 1 for an upward trend, 0 for no trend
+            and -1 for a downward trend.
+        """
         direction = 1
         if obs[0] < exp[0]:
             direction = -1
-        res = chisquare(obs, exp)
+        res = self._power_divergence_test(f_obs=obs, f_exp=exp)
         if res[1] < self.p_threshold:
             return res[1], direction
         return res[1], 0
@@ -89,10 +109,10 @@ class LatestWindowX2AnomalyDetector(FossaPredictorABC):
     def _predict_helper(self, new_windows, last_window):
         padded = pad_windows(last_window, *new_windows)
         padded_last = padded.pop(0)
-        last_1vall = one_vs_all_dists(padded_last, normalize=self.normalize)
+        last_1vall = one_vs_all_dists(padded_last)
         res = []
         for new_win in padded:
-            new_1vall = one_vs_all_dists(new_win, normalize=self.normalize)
+            new_1vall = one_vs_all_dists(new_win)
             pred = {
                 cat: self._detect_trend(new_1vall[cat], last_1vall[cat])
                 for cat in new_1vall
