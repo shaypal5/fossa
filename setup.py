@@ -12,7 +12,7 @@ INSTALL_REQUIRES = [
     'scipy',
     'scikit-learn',
     'pandas',
-    'strct>=0.0.27',
+    'strct>=0.0.28',
 ]
 TEST_REQUIRES = [
     # testing and coverage
