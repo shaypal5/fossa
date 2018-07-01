@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from fossa.core import FossaPredictorABC
+from fossa.base import FossaAnomalyDetectorABC
 
 
-class MockModel(FossaPredictorABC):
+class MockModel(FossaAnomalyDetectorABC):
 
     def fit(self, X, y=None):
         return self
