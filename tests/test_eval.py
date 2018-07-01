@@ -69,8 +69,52 @@ def test_real_model():
     models = [model]
     X = df[['value']]
     y = df[['is_anomaly']]
+
     res = eval_models(X, y, models)
     print(res)
+
+def test_X_None():
+    X = None
+    y = None
+    from tests.mock_model import MockModel
+    model = MockModel()
+    models = [model]
+    try:
+        res = eval_models(X, y, models)
+    except TypeError:
+        assert True
+        return
+    assert False
+
+def test_y_None():
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy.txt')
+    df = read_data(path)
+    X = df[['value']]
+    y = None
+    from tests.mock_model import MockModel
+    model = MockModel()
+    models = [model]
+    try:
+        res = eval_models(X, y, models)
+    except TypeError:
+        assert True
+        return
+    assert False
+
+def test_n_splits_big():
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
+    df = read_data(path)
+
+    from tests.mock_model import MockModel
+    model = MockModel()
+    models = [model]
+    X = df[['value']]
+    y = df[['is_anomaly']]
+    res = eval_models(X, y, models, n_splits=40000,verbose=True)
+    assert res['MockModel()']['f1'] == 1.0
+    assert res['MockModel()']['precision'] == 1.0
+    assert res['MockModel()']['recall'] == 1.0
+
 
 
 def test_f_beta1():
@@ -88,6 +132,7 @@ def test_f_beta3():
     assert (f > 0.937) and (f < 0.938)
 
 
+
 if __name__ == '__main__':
     test_read_data()
     test_eval_models_all_true()
@@ -95,5 +140,7 @@ if __name__ == '__main__':
     test_eval_models_half_false()
     test_f_beta1()
     test_f_beta3()
-
+    test_X_None()
+    test_y_None()
+    test_n_splits_big()
     test_real_model()
