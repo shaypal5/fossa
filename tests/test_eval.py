@@ -3,7 +3,7 @@ import math
 
 import pandas as pd
 
-from fossa import LatestWindowX2AnomalyDetector
+from fossa import LatestWindowAnomalyDetector
 from fossa.eval import read_data, eval_models, f_beta
 
 
@@ -63,7 +63,7 @@ def test_eval_models_half_false():
 def test_real_model():
     path = 'dummy.txt'
     df = read_data(path)
-    model = LatestWindowX2AnomalyDetector(p_threshold=0.05)
+    model = LatestWindowAnomalyDetector(p_threshold=0.05)
     models = [model]
     X = df[['value']]
     y = df[['is_anomaly']]
