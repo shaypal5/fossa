@@ -1,11 +1,13 @@
 """Test evaluation functionality."""
 import math
+import os
 
 import pandas as pd
 
 from fossa import LatestWindowAnomalyDetector
 from fossa.eval import read_data, eval_models, f_beta
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def test_read_data():
     path = 'dummy.txt'
@@ -16,7 +18,7 @@ def test_read_data():
     assert isinstance(df.index, pd.MultiIndex)
 
 def test_eval_models_all_true():
-    path = 'dummy2.txt'
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
     df = read_data(path)
 
     from tests.mock_model import MockModel
@@ -30,7 +32,7 @@ def test_eval_models_all_true():
     assert res['MockModel()']['recall'] == 1.0
 
 def test_eval_models_all_false():
-    path = 'dummy2.txt'
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
     df = read_data(path)
     df['is_anomaly'] = 0
     from tests.mock_model import MockModel
@@ -45,7 +47,7 @@ def test_eval_models_all_false():
     assert math.isnan(res['MockModel()']['recall'])
 
 def test_eval_models_half_false():
-    path = 'dummy2.txt'
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
     df = read_data(path)
     df['is_anomaly'] = 0
     df.iloc[-1]['is_anomaly'] = 1
@@ -61,7 +63,7 @@ def test_eval_models_half_false():
     assert res['MockModel()']['recall'] == 1.0
 
 def test_real_model():
-    path = 'dummy.txt'
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy.txt')
     df = read_data(path)
     model = LatestWindowAnomalyDetector(p_threshold=0.05)
     models = [model]
