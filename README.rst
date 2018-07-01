@@ -44,15 +44,23 @@ Features
 * Fully tested.
 
 
+Approach
+========
+
+Build on top of:
+http://lagrange.univ-lyon1.fr/docs/scipy/0.17.1/generated/scipy.stats.power_divergence.html#scipy.stats.power_divergence
+
+
+
 Use
 ===
 
 Data Format
 -----------
 
-All anomaly detectors are desgined to receive as fit parameter a ``pandas`` DataFrame with a two-leveled multi-index, the first indexing time and the second indexing class/topic frequency per-window, and a single column of a numeric dtype, giving said frequency.
+All anomaly detectors are desgined to receive as fit parameter a ``pandas`` DataFrame with a two-leveled multi-index, the first indexing time and the second indexing category/topic frequency per-window, and a single column of a numeric dtype, giving said frequency.
 
-When detecting trends a similarly-indexed dataframe with detection results.
+When detecting trends a similarly-indexed dataframe with detection results is returned, giving detected trends per time windows and category.
 
 
 API
@@ -61,8 +69,8 @@ API
 All anomaly detector objects in ``fossa`` have an identical API:
 
 - ``fit`` - Recieves a history of time-windowed distributions to train on and fits the detector on it (see the `Data Format`_ section for the exact format). The set of categories may be different across different time windows or between historic and time windoes for detection; detection is done for the union of of categories over all commitee and new time windows.
-- ``partial_fit`` - The same as ``fit``, only can incrementaly fit an already-fit detector without necessarilly ignoring all past fitted data. Detectors who do not support incremental fitting will raise a ``NotImplementedError`` exception when this method is called.
-- ``detect_trends`` - Recieves a new dataframe of the correct format and detects, for each of the time windows in it, trends for each category. In addition to the ``direction`` column - indicating trend direction, with -1 for a downward trend, 0 for no trend and 1 for an upward trend - the returned dataframe might contain additional columns detailing detection confidence or probability, like p-values or commitee vote results.
+- ``partial_fit`` - The same as ``fit``, but can also incrementaly fit an already-fit detector without necessarilly ignoring all past fitted data. Detectors who do not support incremental fitting will raise a ``NotImplementedError`` exception when this method is called.
+- ``detect_trends`` - Recieves a new dataframe (in the correct format) and detects, for each of the time windows in it, trends for each category. In addition to the ``direction`` column - indicating trend direction, with -1 for a downward trend, 0 for no trend and 1 for an upward trend - the returned dataframe might contain additional columns detailing detection confidence or probability, like p-values or commitee vote results.
 - ``predict`` - Like ``detect_trends``, except the returned dataframe always contains only a single column of detected trend directions.
    
 

@@ -3,11 +3,11 @@
 import pytest
 import pandas as pd
 
-from fossa import LatestWindowX2AnomalyDetector
+from fossa import LatestWindowAnomalyDetector
 
 
 def test_bad_data():
-    clf = LatestWindowX2AnomalyDetector(p_threshold=0.00001)
+    clf = LatestWindowAnomalyDetector(p_threshold=0.00001)
     # bad df: one-level index
     with pytest.raises(ValueError):
         df = pd.DataFrame([[1], [4]], columns=['value'])
