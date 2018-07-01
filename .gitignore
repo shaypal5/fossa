@@ -104,3 +104,10 @@ tags
 
 # osx
 .DS_Store
+
+
+# data
+.csv
+data/
+
+.idea/
