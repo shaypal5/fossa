@@ -27,24 +27,24 @@ def test_eval_models_all_true():
     X = df[['value']]
     y = df[['is_anomaly']]
     res = eval_models(X, y, models)
-    assert res['MockModel()']['f1'] == 1.0
-    assert res['MockModel()']['precision'] == 1.0
-    assert res['MockModel()']['recall'] == 1.0
+    print(res)
+    assert res['MockModel(prediction=1)']['f1'] == 1.0
+    assert res['MockModel(prediction=1)']['precision'] == 1.0
+    assert res['MockModel(prediction=1)']['recall'] == 1.0
 
 def test_eval_models_all_false():
-    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy.txt')
     df = read_data(path)
     df['is_anomaly'] = 0
     from tests.mock_model import MockModel
-    model = MockModel()
+    model = MockModel(prediction=0)
     models = [model]
     X = df[['value']]
     y = df[['is_anomaly']]
     res = eval_models(X, y, models)
-    print(res)
-    assert math.isnan(res['MockModel()']['f1'])
-    assert res['MockModel()']['precision'] == 0.0
-    assert math.isnan(res['MockModel()']['recall'])
+    assert math.isnan(res['MockModel(prediction=0)']['f1'])
+    assert math.isnan(res['MockModel(prediction=0)']['precision'])
+    assert math.isnan(res['MockModel(prediction=0)']['recall'])
 
 def test_eval_models_half_false():
     path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy2.txt')
@@ -58,9 +58,8 @@ def test_eval_models_half_false():
     X = df[['value']]
     y = df[['is_anomaly']]
     res = eval_models(X, y, models)
-    print(res)
-    assert res['MockModel()']['precision'] == 0.5
-    assert res['MockModel()']['recall'] == 1.0
+    assert res['MockModel(prediction=1)']['precision'] == 0.5
+    assert res['MockModel(prediction=1)']['recall'] == 1.0
 
 def test_real_model():
     path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy.txt')
@@ -111,9 +110,9 @@ def test_n_splits_big():
     X = df[['value']]
     y = df[['is_anomaly']]
     res = eval_models(X, y, models, n_splits=40000,verbose=True)
-    assert res['MockModel()']['f1'] == 1.0
-    assert res['MockModel()']['precision'] == 1.0
-    assert res['MockModel()']['recall'] == 1.0
+    assert res['MockModel(prediction=1)']['f1'] == 1.0
+    assert res['MockModel(prediction=1)']['precision'] == 1.0
+    assert res['MockModel(prediction=1)']['recall'] == 1.0
 
 
 
