@@ -10,7 +10,7 @@ from fossa.eval import read_data, eval_models, f_beta
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def test_read_data():
-    path = 'dummy.txt'
+    path = os.path.join(THIS_DIR, os.pardir, 'tests/dummy.txt')
     df = read_data(path)
     index = df.index
     # assert index is pd.MultiIndex
