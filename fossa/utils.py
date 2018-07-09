@@ -6,6 +6,8 @@ import pandas as pd
 
 def pad_windows(*windows):
     cat_union = list(set(v for df in windows for v in df.index))
+    if all([len(cat_union) == len(df) for df in windows]):
+        return list(windows)
     patching_df = pd.DataFrame(data=[0] * len(cat_union), index=cat_union)
     results = []
     for df in windows:

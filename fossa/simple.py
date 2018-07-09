@@ -117,7 +117,7 @@ class LatestWindowAnomalyDetector(PowerDivergenceAnomalyDetectorABC):
                 cat: self._detect_trend(new_1vall[cat], last_1vall[cat])
                 for cat in new_1vall
             }
-            res.append(pd.DataFrame(pred, index=['p', 'direction']).T)
+            res.append(pd.DataFrame(pred, index=['p', 'trend']).T)
         return res
 
     def detect_trends(self, df):
@@ -154,7 +154,7 @@ class LatestWindowAnomalyDetector(PowerDivergenceAnomalyDetectorABC):
             new_windows=padded_windows, last_window=padded_last_win)
         res_df = pd.concat(pred_windows, keys=df.index.levels[0],
                            names=df.index.names)
-        res_df.columns = ['p', 'direction']
+        res_df.columns = ['p', 'trend']
         return res_df
 
     def predict(self, X):
@@ -180,4 +180,4 @@ class LatestWindowAnomalyDetector(PowerDivergenceAnomalyDetectorABC):
             time window and the given time windows.
         """
         res_df = self.detect_trends(df=X)
-        return res_df[['direction']]
+        return res_df[['trend']]
