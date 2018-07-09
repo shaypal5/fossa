@@ -8,8 +8,8 @@ Distribution-based anomaly detection for time series data.
 
 .. code-block:: python
 
-  >>> from fossa import LastWindowX2AnomalyDetector
-  >>> clf = LastWindowX2AnomalyDetector(p_threshold=0.005, normalize=True)
+  >>> from fossa import LatestWindowAnomalyDetector
+  >>> clf = LatestWindowAnomalyDetector(p_threshold=0.005)
   >>> clf.fit(historic_data_df)
   >>> clf.predict(new_data)
                        direction
