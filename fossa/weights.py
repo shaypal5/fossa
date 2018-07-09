@@ -17,7 +17,7 @@ def uniform_weighter():
 
 
 def first_n_uniform_weighter(n):
-    """A generator whose first n weights are uniform (of 1) and the rest are 0.
+    """A generator whose first n weights are of weight 1 and the rest are 0.
 
     Parameters
     ----------
@@ -43,9 +43,9 @@ def exp_weighter(base):
     ----------
     base : float
         The base to raise by the index of the weight. Thus, the i-th weight
-        produced will be base ^ i. The first weight is thus only 1. Also, bases
-        larger than 1 produce increasing weights while bases between 0 and 1
-        produce exponentially decreasing weights.
+        produced will be base ^ i. The first weight is thus always 1. Also,
+        bases larger than 1 produce increasing weights while bases between 0
+        and 1 produce exponentially decreasing weights.
 
     Example
     -------
@@ -72,7 +72,7 @@ def exp_comp_weighter(n, concave_factor=None):
         The closer this number is to zero the more linear the decrease, while
         as it grows larger the decrease moe exponential (the function becomes
         more concave; more starting weights stay closer to 1, and the decrease
-        come later and becomes more pronounced). Defaults to 5.
+        comes later and becomes more pronounced). Defaults to 5.
 
     Examples
     --------

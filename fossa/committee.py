@@ -15,12 +15,6 @@ from .utils import (
     pad_windows,
     one_vs_all_dists,
 )
-from .weighter import (
-    uniform_weighter,
-    first_n_uniform_weighter,
-    exp_weighter,
-    exp_comp_weighter,
-)
 
 
 class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
@@ -34,7 +28,8 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
         value between 0 and 1 (inclusive).
     p_weight : bool, default False
         If set to True, votes of committee members are farther weighted by the
-        by the probability of their test result.
+        by the probability of their test result, and not only by their
+        committee weights.
     """
 
     __doc__ += PowerDivergenceAnomalyDetectorABC._param_subdoc
@@ -54,6 +49,8 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
 
         This allows weighting schemes that are both agnostic or dependent on
         metrics and comparisons between the new window and the committee.
+
+        Additionally, the
 
         ==== END-OF Inner Documentation ====
     """
@@ -102,9 +99,35 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
             "and thus needs to be either extended with sub-class or ammended."
         )
 
-    def _predict_trends_for_new_window(self, new_window):
+    def _is_fitted(self):
+        raise NotImplementedError(
+            "This class of committee-based anomaly detection does not "
+            "implement the required self._is_fitted() method, "
+            "and thus needs to be either extended with sub-class or ammended."
+        )
+
+    def _predict_trends_for_new_window(self, new_window, new_window_dt):
+        """Predicts trends for the given time window.
+
+        Parameters
+        ----------
+        new_window : pandas.DataFrame
+            The time window for which to detect trends; a pandas DataFrame with
+            a single-level index, indexing class/topic, and a single column of
+            a numeric dtype, giving frequency for each class.
+        new_window_dt : datetime.datetime
+            The time of the given window.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A dataframe giving the trend, and the confidence in its detection,
+            for each of the classes in the given dataframe.
+        """
         votes_by_category = {}
-        for weight, committee_win in self._get_committe(new_window):
+        weights_n_committee_members = self._get_committee(
+            new_window, new_window_dt)
+        for weight, committee_win in weights_n_committee_members:
             new_padded, member_padded = pad_windows(new_window, committee_win)
             new_1vall = one_vs_all_dists(new_padded)
             member_1vall = one_vs_all_dists(member_padded)
@@ -150,20 +173,20 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
             A pandas DataFrame with a two-leveled multi-index, the first
             indexing time and the second indexing class/topic frequency
             per-window, and two columns giving trend predictions: the first
-            column gives the p value for the predicted trend, while the second
-            column gives the direction of the predict trend: -1 for a downward
-            trend, 0 for no trend and 1 for an upward trend. The first index
-            level is identical to the input dataframe, while the second level
-            contains all the categories in the union of the last time window
-            and the given time windows.
+            column giving the confidence for the predicted trend, the second
+            giving the direction of the predict trend: -1 for a downward trend,
+            0 for no trend and 1 for an upward trend. The first index level is
+            identical to the input dataframe, while the second level contains
+            all the categories in the union of the corresponding time window
+            and all committee time windows.
         """
-        if self.last_window is None:
+        if not self._is_fitted():
             raise NotFittedError("This {} instance is not fitted yet.".format(
                 self.__class__.__name__))
-        windows_to_predict = [df.loc[ix] for ix in df.index.levels[0]]
+        windows_to_predict = [(ix, df.loc[ix]) for ix in df.index.levels[0]]
         pred_windows = [
-            self._predict_trends_for_new_window(window)
-            for window in windows_to_predict
+            self._predict_trends_for_new_window(window, ix)
+            for ix, window in windows_to_predict
         ]
         res_df = pd.concat(pred_windows, keys=df.index.levels[0],
                            names=df.index.names)
@@ -193,7 +216,7 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
             time window and the given time windows.
         """
         res_df = self.detect_trends(df=X)
-        return res_df[['direction']]
+        return res_df[['trend']]
 
 
 class LastNWindowsAnomalyDetector(CommitteeBasedAnomalyDetectorABC):
@@ -203,8 +226,16 @@ class LastNWindowsAnomalyDetector(CommitteeBasedAnomalyDetectorABC):
     ----------
     n_windows : int
         The number of last windows to include in the committee.
-    weights : str, iterable or callable
-        Determines the weighing scheme between
+    weights : iterable over floats or callable
+        Determines the weighing scheme between different windows in the
+        committee. If an iterable is given, it is called n times when the
+        detector is initialized to determine the set weights for committee
+        members, where the first weight returned is for the most recent window,
+        and the last for the least recent window. See fossa.weights for some
+        weight generator functions. If a callable is given, it is called n
+        times on each call to predict, giving the datetime index of the window
+        to predict and of the committe member to provide a weight for; i.e.
+        weights(window_to_predict_dt, committee_window_df).
     """
     __doc__ += CommitteeBasedAnomalyDetectorABC._param_subdoc
 
@@ -217,9 +248,25 @@ class LastNWindowsAnomalyDetector(CommitteeBasedAnomalyDetectorABC):
             ddof=ddof,
         )
         self.n_windows = n_windows
-        # direction is newest_window->older_win->...->oldest_window
-        # so we add with deque.appendleft() and remove with deque.pop()
+        self.weights = weights
+        # direction is oldest_window<-older_win<-...<-newest_window
+        # so we add with deque.append() and remove with deque.popleft()
+        # objects are 2-tuples (date_index_item, time_window_dataframe)
         self.window_queue = deque(iterable=[], maxlen=self.n_windows)
+
+    def _is_fitted(self):
+        return len(self.window_queue) > 0
+
+    def _get_committee(self, new_window, new_window_dt):
+        committee = reversed(self.window_queue)
+        if callable(self.weights):
+            for dt, window in committee:
+                weight = self.weights(new_window_dt, dt)
+                yield weight, window
+        else:
+            for weight, dt_n_window in zip(self.weights, committee):
+                dt, window = dt_n_window
+                yield weight, window
 
     def fit(self, X, y=None):
         """Fits the classifier.
@@ -241,10 +288,10 @@ class LastNWindowsAnomalyDetector(CommitteeBasedAnomalyDetectorABC):
         """
         # Check that X and y have correct shape
         self._validate_x(X)
-        sorted_df = X.sort_index(level=0, ascending=False)
-        last_n_windows_ix = sorted_df.index[0][-self.n_windows:]
-        last_n_windows = sorted_df.loc[last_n_windows_ix]
-        self.last_window = last_window
+        sorted_df = X.sort_index(level=0, ascending=True)
+        last_n_windows_ix = sorted_df.index.levels[0][-self.n_windows:]
+        for ix in last_n_windows_ix:
+            self.window_queue.append((ix, sorted_df.loc[ix]))
         return self
 
     def partial_fit(self, X, y=None):
