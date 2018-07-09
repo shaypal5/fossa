@@ -83,6 +83,8 @@ def exp_comp_weighter(n, concave_factor=None):
     >>> ['{:.3f}'.format(weighter.__next__()) for i in range(6)]
     ['0.598', '0.518', '0.421', '0.306', '0.167', '0.000']
     """
+    if concave_factor is None:
+        concave_factor = 5
     base = 1 + concave_factor/n
     norm = math.pow(base, n-1)
     for i in range(n):

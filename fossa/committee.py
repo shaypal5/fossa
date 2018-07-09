@@ -92,17 +92,17 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
             return res[1], direction
         return res[1], 0
 
-    def _get_committee(self, new_window):
-        raise NotImplementedError(
-            "This class of committee-based anomaly detection does not "
-            "implement the required self._get_committee(new_window) method, "
-            "and thus needs to be either extended with sub-class or ammended."
-        )
-
     def _is_fitted(self):
         raise NotImplementedError(
             "This class of committee-based anomaly detection does not "
             "implement the required self._is_fitted() method, "
+            "and thus needs to be either extended with sub-class or ammended."
+        )
+
+    def _get_committee(self, new_window, new_window_dt):
+        raise NotImplementedError(
+            "This class of committee-based anomaly detection does not "
+            "implement the required self._get_committee(new_window) method, "
             "and thus needs to be either extended with sub-class or ammended."
         )
 
