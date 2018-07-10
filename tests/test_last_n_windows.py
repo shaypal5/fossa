@@ -21,9 +21,9 @@ def test_base():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -32,7 +32,7 @@ def test_base():
 
     num_new_days = 30
     many_days = dummy_data(
-        num_days=num_new_days, num_categories=num_categ, min_val=1000,
+        num_windows=num_new_days, num_categories=num_categ, min_val=1000,
         max_val=1200)
     predictions = clf.predict(many_days)
     assert len(predictions) == num_categ * num_new_days
@@ -49,9 +49,9 @@ def test_diff_categ():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ_1, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ_1, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ_2, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ_2, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == max(num_categ_1, num_categ_2)
@@ -80,7 +80,7 @@ def test_errors():
         alpha=0.001,
     )
     new_day = dummy_data(
-        num_days=1, num_categories=8, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=8, min_val=1000, max_val=1200)
     with pytest.raises(NotFittedError):
         clf.predict(new_day)
 
@@ -93,11 +93,11 @@ def test_partial_fit():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     recent_history = dummy_data(
-        num_days=6, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=6, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     clf.partial_fit(recent_history)
     prediction = clf.predict(new_day)
@@ -115,9 +115,9 @@ def test_p_weight():
         p_weight=True,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -134,9 +134,9 @@ def test_non_def_power():
         power=0,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -154,9 +154,9 @@ def test_non_def_ddof():
         ddof=4,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -172,9 +172,9 @@ def test_first_n_uniform_weighter():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -190,9 +190,9 @@ def test_exp_weighter():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -231,9 +231,9 @@ def test_exp_comp_weighter():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
@@ -287,9 +287,9 @@ def test_weights_function():
         alpha=0.001,
     )
     history = dummy_data(
-        num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=10, num_categories=num_categ, min_val=1000, max_val=1200)
     new_day = dummy_data(
-        num_days=1, num_categories=num_categ, min_val=1000, max_val=1200)
+        num_windows=1, num_categories=num_categ, min_val=1000, max_val=1200)
     clf.fit(history)
     prediction = clf.predict(new_day)
     assert len(prediction) == num_categ
