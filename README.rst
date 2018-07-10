@@ -47,9 +47,21 @@ Features
 Approach
 ========
 
-Build on top of:
-http://lagrange.univ-lyon1.fr/docs/scipy/0.17.1/generated/scipy.stats.power_divergence.html#scipy.stats.power_divergence
+``fossaa`` is written to detect anomalies in multi-class or multi-categorical frequency data in constant-sized windows.
 
+Power Divergence-based Anomaly Detection
+----------------------------------------
+
+The base approach of ``fossa`` to anomaly detection is non-parametric; when a model is fit with historic data split into constant-sized time windows, rather than generalizing it into some parametric model, the historic data - or a subset thereof - is kept in a simple data structure.
+
+Then, when a fitted model is required to detect anomalies in some newer time window, it performs multiple Cressie-Read power divergence statistic and goodness of fit tests (using `the scipy implementation <http://lagrange.univ-lyon1.fr/docs/scipy/0.17.1/generated/scipy.stats.power_divergence.html#scipy.stats.power_divergence>`_ between the frequency distribution in each (or some) of the historic windows and the frequency distribution in the new time window.
+
+The test logic is as follows:
+
+- For each of the historic windows in consideration, both its distribution and that of the new window are padded to the union of their categories; let us assume this results in `n` categories.
+  - Then, for each of these `n` categories a one-vs-all binary distribution is generated for both the historic time window and the new one, and a power divergence test is performed between the two distributions; a rejection of the null hypothesis (occuring when the resulting p-value is smaller than some pre-defined :math: `\alpha`) means a trend is detected for that category (with the direction determined by the direction of the difference in the relative freqencies between the historic and new distribution), while otherwise no trend is detected.
+  - Possibly, one additional power divergence test is performed between the original (non-binarized) categorical distributions of the historic and the new time window. The result of this test can be taken into account when determining the final conclusion of the comparison of this specific historic window and the new one, for any or all of the categories.
+- If several historic time windows were used, their "votes" are somehow resolved into a final decision.
 
 
 Use
