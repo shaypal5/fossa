@@ -7,7 +7,7 @@ from fossa import LatestWindowAnomalyDetector
 
 
 def test_bad_data():
-    clf = LatestWindowAnomalyDetector(p_threshold=0.00001)
+    clf = LatestWindowAnomalyDetector(alpha=0.00001)
     # bad df: one-level index
     with pytest.raises(ValueError):
         df = pd.DataFrame([[1], [4]], columns=['value'])

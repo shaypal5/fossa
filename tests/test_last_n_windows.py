@@ -18,7 +18,7 @@ def test_base():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
@@ -46,7 +46,7 @@ def test_diff_categ():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ_1, min_val=1000, max_val=1200)
@@ -65,19 +65,19 @@ def test_errors():
         LastNWindowsAnomalyDetector(
             n_windows=4,
             weights=uniform_weighter(),
-            p_threshold=2,
+            alpha=2,
         )
     # bad p thresholds
     with pytest.raises(ValueError):
         LastNWindowsAnomalyDetector(
             n_windows=4,
             weights=uniform_weighter(),
-            p_threshold=-1,
+            alpha=-1,
         )
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     new_day = dummy_data(
         num_days=1, num_categories=8, min_val=1000, max_val=1200)
@@ -90,7 +90,7 @@ def test_partial_fit():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
@@ -111,7 +111,7 @@ def test_p_weight():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
         p_weight=True,
     )
     history = dummy_data(
@@ -130,7 +130,7 @@ def test_non_def_power():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
         power=0,
     )
     history = dummy_data(
@@ -149,7 +149,7 @@ def test_non_def_ddof():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=uniform_weighter(),
-        p_threshold=0.001,
+        alpha=0.001,
         power=-2,
         ddof=4,
     )
@@ -169,7 +169,7 @@ def test_first_n_uniform_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=6,
         weights=first_n_uniform_weighter(4),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
@@ -187,7 +187,7 @@ def test_exp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=exp_weighter(3/4),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
@@ -202,7 +202,7 @@ def test_exp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=exp_weighter(0.1),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     clf.fit(history)
     prediction = clf.predict(new_day)
@@ -213,7 +213,7 @@ def test_exp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=4,
         weights=exp_weighter(2.3),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     clf.fit(history)
     prediction = clf.predict(new_day)
@@ -228,7 +228,7 @@ def test_exp_comp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=n_windows,
         weights=exp_comp_weighter(n=n_windows, concave_factor=1),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)
@@ -243,7 +243,7 @@ def test_exp_comp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=n_windows,
         weights=exp_comp_weighter(n=n_windows, concave_factor=3),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     clf.fit(history)
     prediction = clf.predict(new_day)
@@ -254,7 +254,7 @@ def test_exp_comp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=n_windows,
         weights=exp_comp_weighter(n=n_windows, concave_factor=30),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     clf.fit(history)
     prediction = clf.predict(new_day)
@@ -265,7 +265,7 @@ def test_exp_comp_weighter():
     clf = LastNWindowsAnomalyDetector(
         n_windows=n_windows,
         weights=exp_comp_weighter(n=n_windows, concave_factor=None),
-        p_threshold=0.001,
+        alpha=0.001,
     )
     clf.fit(history)
     prediction = clf.predict(new_day)
@@ -284,7 +284,7 @@ def test_weights_function():
     clf = LastNWindowsAnomalyDetector(
         n_windows=6,
         weights=_weight_by_inverse_days_delta,
-        p_threshold=0.001,
+        alpha=0.001,
     )
     history = dummy_data(
         num_days=10, num_categories=num_categ, min_val=1000, max_val=1200)

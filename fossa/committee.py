@@ -22,7 +22,7 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
 
     Parameters
     ----------
-    p_threshold : float
+    alpha : float
         A threshold for p values under which difference in an observed
         distribution is determined to be a significant anomaly. Has to be a
         value between 0 and 1 (inclusive).
@@ -55,14 +55,14 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
         ==== END-OF Inner Documentation ====
     """
 
-    def __init__(self, p_threshold, p_weight=False, power=None, ddof=None):
+    def __init__(self, alpha, p_weight=False, power=None, ddof=None):
         super().__init__(
             power=power,
             ddof=ddof,
         )
-        if p_threshold < 0 or p_threshold > 1:
-            raise ValueError("p_threshold must be in [0,1].")
-        self.p_threshold = p_threshold
+        if alpha < 0 or alpha > 1:
+            raise ValueError("alpha must be in [0,1].")
+        self.alpha = alpha
         self.weigh_by_p_val = p_weight
 
     def _detect_trend(self, obs, exp):
@@ -88,7 +88,7 @@ class CommitteeBasedAnomalyDetectorABC(PowerDivergenceAnomalyDetectorABC, ABC):
         if obs[0] < exp[0]:
             direction = -1
         res = self._power_divergence_test(f_obs=obs, f_exp=exp)
-        if res[1] < self.p_threshold:
+        if res[1] < self.alpha:
             return res[1], direction
         return res[1], 0
 
@@ -239,10 +239,10 @@ class LastNWindowsAnomalyDetector(CommitteeBasedAnomalyDetectorABC):
     """
     __doc__ += CommitteeBasedAnomalyDetectorABC._param_subdoc
 
-    def __init__(self, n_windows, weights, p_threshold, p_weight=False,
+    def __init__(self, n_windows, weights, alpha, p_weight=False,
                  power=None, ddof=None):
         super().__init__(
-            p_threshold=p_threshold,
+            alpha=alpha,
             p_weight=p_weight,
             power=power,
             ddof=ddof,

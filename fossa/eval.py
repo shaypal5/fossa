@@ -57,9 +57,9 @@ def eval_models(X, y, models, n_splits=None, verbose=False):
     """
 
     if X is None:
-        raise TypeError
+        raise TypeError("The X parameter must be a pandas.DataFrame")
     if y is None:
-        raise TypeError
+        raise TypeError("The y parameter must be a pandas.DataFrame")
 
     if n_splits is None:
         n_splits = int(len(X.index.levels[0]) / 2)
