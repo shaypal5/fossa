@@ -41,3 +41,40 @@ def test_history_delta():
     assert len(clf.window_queue) == EXPECTED_DAYS
     for dt, window in clf.window_queue:
         assert dt in expected_dts
+
+
+def test_delta_cond():
+    WEIGHT = 12
+    clf = ConditionsCommitteeAnomalyDetector(
+        history_delta=timedelta(days=3),
+        conditions=[],
+    ).match_delta(
+        delta=timedelta(days=1),
+        weight=WEIGHT,
+    )
+
+    # dummy df of some consecutive days
+    df = dummy_data(
+        num_windows=6,
+        num_categories=3,
+        min_val=1,
+        max_val=5,
+        start='1/1/2011'
+    )
+    clf.fit(df)
+    last_window = df.loc[df.index.levels[0][-1]]
+
+    new_data = dummy_data(
+        num_windows=1,
+        num_categories=3,
+        min_val=1,
+        max_val=5,
+        start='1/7/2011'
+    )
+    new_dt = new_data.index.levels[0][0]
+    new_window = new_data.loc[new_dt]
+    committee = list(clf._get_committee(new_window, new_dt))
+    assert len(committee) == 1
+    comm_weight, comm_window = committee[0]
+    assert comm_weight == WEIGHT
+    assert comm_window.equals(last_window)
